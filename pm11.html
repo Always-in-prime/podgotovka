@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Шпаргалка по БД и программированию (60 заданий)</title>
+    <title>Шпаргалка по БД и программированию (уникальные задания)</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
             background: #f1f5f9;
@@ -30,7 +26,41 @@
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+        }
+        /* Фильтры */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px 25px;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .filters input, .filters select, .filters label {
+            font-size: 0.95rem;
+        }
+        .filters input[type="text"] {
+            padding: 6px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            min-width: 200px;
+        }
+        .filters select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: white;
+        }
+        .filters label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
         }
         .cards-grid {
             display: grid;
@@ -45,6 +75,7 @@
             border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
+            transition: 0.15s;
         }
         .card:hover {
             transform: translateY(-2px);
@@ -61,11 +92,25 @@
             width: fit-content;
             margin-bottom: 8px;
         }
+        .card-category {
+            font-size: 0.7rem;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 12px;
+            color: #475569;
+            display: inline-block;
+            margin-left: 8px;
+        }
         .card-short {
             font-size: 0.92rem;
             line-height: 1.5;
             flex: 1;
             margin-bottom: 12px;
+        }
+        .card-duplicate {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
         }
         .btn-detail {
             background: #2563eb;
@@ -79,49 +124,38 @@
             align-self: flex-start;
             transition: background 0.2s;
         }
-        .btn-detail:hover {
-            background: #1d4ed8;
-        }
+        .btn-detail:hover { background: #1d4ed8; }
+        .card.hidden { display: none; }
 
         /* Модалка */
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         .modal-content {
             background: white;
             border-radius: 16px;
-            max-width: 820px;
+            max-width: 860px;
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
             padding: 28px 32px 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             position: relative;
             animation: fadeIn 0.2s ease;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.96);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
         }
         .close-btn {
             position: absolute;
@@ -132,9 +166,7 @@
             color: #94a3b8;
             line-height: 1;
         }
-        .close-btn:hover {
-            color: #1e293b;
-        }
+        .close-btn:hover { color: #1e293b; }
         .modal-title {
             font-size: 1.4rem;
             font-weight: 700;
@@ -142,7 +174,6 @@
             color: #0f172a;
             padding-right: 30px;
         }
-
         .section {
             margin-bottom: 20px;
         }
@@ -154,10 +185,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            user-select: none;
         }
-        .section h3 span {
-            font-size: 1.2rem;
+        .section h3:hover { color: #2563eb; }
+        .section h3 .arrow {
+            transition: transform 0.2s;
+            display: inline-block;
         }
+        .section h3 .arrow.collapsed { transform: rotate(-90deg); }
         .section-content {
             font-size: 0.95rem;
             line-height: 1.7;
@@ -168,6 +204,7 @@
             border-radius: 8px;
             border-left: 4px solid #2563eb;
             margin-top: 2px;
+            overflow-x: auto;
         }
         .section-content.sql {
             font-family: 'Courier New', monospace;
@@ -175,6 +212,11 @@
             color: #e2e8f0;
             border-left-color: #facc15;
         }
+        .section-content.sql .kw { color: #facc15; }
+        .section-content.sql .fn { color: #60a5fa; }
+        .section-content.sql .str { color: #a3e635; }
+        .section-content.sql .cmt { color: #94a3b8; }
+        .section-content.sql .num { color: #f472b6; }
         .section-content table {
             width: 100%;
             border-collapse: collapse;
@@ -188,727 +230,664 @@
             text-align: left;
             font-weight: 600;
         }
-        .section-content table td,
-        .section-content table th {
+        .section-content table td, .section-content table th {
             border: 1px solid #cbd5e1;
             padding: 6px 10px;
         }
-        .section-content table tr:nth-child(even) {
-            background: #f1f5f9;
-        }
-        .section-content table tr:hover {
-            background: #e2e8f0;
-        }
-
+        .section-content table tr:nth-child(even) { background: #f1f5f9; }
+        .section-content table tr:hover { background: #e2e8f0; }
+        .section-content.hidden { display: none; }
         @media (max-width: 600px) {
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
-            .modal-content {
-                padding: 20px;
-            }
-            .section-content {
-                padding: 10px 12px;
-                font-size: 0.9rem;
-            }
+            .cards-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 20px; }
+            .filters { flex-direction: column; align-items: stretch; }
+            .filters input[type="text"] { min-width: auto; }
         }
+        /* Оглавление */
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .toc a {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #1e293b;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .toc a:hover { background: #2563eb; color: white; }
+        .toc a.duplicate { background: #f1f5f9; color: #94a3b8; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📋 60 заданий — БД и программирование</h1>
-            <p style="color: #475569;">Краткая шпаргалка для защиты / экзамена</p>
-        </div>
-        <div id="cards" class="cards-grid"></div>
+<div class="container">
+    <div class="header">
+        <h1>📋 Уникальные задания — БД и программирование</h1>
+        <p style="color: #475569;">40 уникальных заданий + ссылки на повторы</p>
     </div>
 
-    <!-- Модальное окно -->
-    <div id="modal" class="modal" onclick="if(event.target===this) closeModal()">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <div class="modal-title" id="modalTitle"></div>
-            <div id="modalBody"></div>
-        </div>
+    <!-- Фильтры -->
+    <div class="filters">
+        <input type="text" id="searchInput" placeholder="Поиск по тексту..." />
+        <select id="categoryFilter">
+            <option value="all">Все категории</option>
+            <option value="sql">SQL</option>
+            <option value="algo">Алгоритмы</option>
+        </select>
+        <label>
+            <input type="checkbox" id="hideDuplicates" checked /> Скрыть повторы
+        </label>
+        <span style="color:#94a3b8; font-size:0.9rem;" id="countDisplay">Показано: 40</span>
     </div>
 
-    <script>
-        // ------------------------------------------------------------
-        // НОВАЯ СТРУКТУРА ДАННЫХ (все 60 заданий)
-        // Поля: number, short (для карточки), task, tables, sql, sample (HTML-таблица)
-        // ------------------------------------------------------------
-        const data = [{
+    <!-- Оглавление -->
+    <div class="toc" id="tocContainer"></div>
+
+    <div id="cards" class="cards-grid"></div>
+</div>
+
+<!-- Модалка -->
+<div id="modal" class="modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-title" id="modalTitle"></div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    // ------------------------------------------------------------
+    // ДАННЫЕ: 40 уникальных заданий (категории: sql / algo)
+    // Для дублей используем поле duplicate_of (номер оригинала)
+    // ------------------------------------------------------------
+    const data = [
+        // === SQL ===
+        {
             number: 1,
-            short: "Завод: сотрудники, дети, премии. Сводка по полу детей в отделах, общее число детей, число премированных.",
+            category: "sql",
+            short: "Завод: сводка по полу детей в отделах, общее число детей, число премированных.",
             task: "Вывести сводку по отделам: количество мальчиков и девочек среди детей сотрудников, общее количество детей, а также число сотрудников, получающих премию.",
             tables: "• Сотрудники (ID, ФИО, Отдел, ДатаРождения, Пол, Должность, Цех, Премия (да/нет))\n• Дети (ID, ID_Сотр, Имя, Пол, Возраст)",
-            sql: "1. По отделам:\n   SELECT Отдел,\n          SUM(CASE WHEN Дети.Пол='М' THEN 1 ELSE 0 END) AS Мальчики,\n          SUM(CASE WHEN Дети.Пол='Ж' THEN 1 ELSE 0 END) AS Девочки\n   FROM Сотрудники\n   JOIN Дети ON Сотрудники.ID = Дети.ID_Сотр\n   GROUP BY Отдел;\n\n2. Общее число детей:\n   SELECT COUNT(*) AS Всего_детей FROM Дети;\n\n3. Число премированных:\n   SELECT COUNT(*) AS Премированные FROM Сотрудники WHERE Премия = TRUE;",
-            sample: `<table>
-                <tr><th>Отдел</th><th>Мальчики</th><th>Девочки</th></tr>
-                <tr><td>ИТ</td><td>3</td><td>2</td></tr>
-                <tr><td>Бухгалтерия</td><td>1</td><td>4</td></tr>
-                <tr><td>Производство</td><td>5</td><td>1</td></tr>
-            </table>`
-        }, {
+            sql: "SELECT Отдел,\n       SUM(CASE WHEN Дети.Пол='М' THEN 1 ELSE 0 END) AS Мальчики,\n       SUM(CASE WHEN Дети.Пол='Ж' THEN 1 ELSE 0 END) AS Девочки\nFROM Сотрудники\nJOIN Дети ON Сотрудники.ID = Дети.ID_Сотр\nGROUP BY Отдел;\n\n-- Общее число детей:\nSELECT COUNT(*) AS Всего_детей FROM Дети;\n\n-- Число премированных:\nSELECT COUNT(*) AS Премированные FROM Сотрудники WHERE Премия = TRUE;",
+            sample: `<table><tr><th>Отдел</th><th>Мальчики</th><th>Девочки</th></tr><tr><td>ИТ</td><td>3</td><td>2</td></tr><tr><td>Бухгалтерия</td><td>1</td><td>4</td></tr></table>`
+        },
+        {
             number: 2,
-            short: "Интернет-магазин: структура БД, SQL — клиент, купивший колонки SVEN по минимальной цене.",
-            task: "Найти клиента (ФИО), который приобрёл колонки марки SVEN по самой низкой цене (среди всех колонок SVEN в каталоге).",
+            category: "sql",
+            short: "Интернет-магазин: клиент, купивший колонки SVEN по минимальной цене.",
+            task: "Найти клиента (ФИО), который приобрёл колонки марки SVEN по самой низкой цене.",
             tables: "• Клиенты (ID, ФИО, Адрес, Телефон)\n• Товары (ID, Название, Тип, Цена)\n• Заказы (ID, ID_Клиента, Дата)\n• ДеталиЗаказа (ID_Заказа, ID_Товара, Кол-во)",
             sql: "SELECT Клиенты.ФИО\nFROM Клиенты\nJOIN Заказы ON Клиенты.ID = Заказы.ID_Клиента\nJOIN ДеталиЗаказа ON Заказы.ID = ДеталиЗаказа.ID_Заказа\nJOIN Товары ON ДеталиЗаказа.ID_Товара = Товары.ID\nWHERE Товары.Название = 'SVEN' AND Товары.Тип = 'колонки'\n  AND Товары.Цена = (SELECT MIN(Цена) FROM Товары WHERE Название='SVEN' AND Тип='колонки');",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Петров Пётр Петрович</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Петров Пётр Петрович</td></tr></table>`
+        },
+        {
             number: 3,
-            short: "Университет: кафедры, помещения, ремонты. Список помещений под ремонт, поиск сотрудника, сводка по этажам/месяцам.",
-            task: "1. Список помещений, находящихся в ремонте в текущем году.\n2. Поиск сотрудника по неполному ФИО.\n3. Сводка количества ремонтов по этажам и месяцам начала.",
+            category: "sql",
+            short: "Университет: ремонты помещений, поиск сотрудника, сводка по этажам/месяцам.",
+            task: "1. Список помещений в ремонте в текущем году.\n2. Поиск сотрудника по неполному ФИО.\n3. Сводка количества ремонтов по этажам и месяцам начала.",
             tables: "• Кафедры (ID, Название)\n• Помещения (ID, №, Этаж, Площадь, Кафедра)\n• Ремонты (ID_Помещения, Дата_начала, Дата_конца, Год)\n• Сотрудники (ID, ФИО, ДатаРожд, Адрес, Телефон, Кафедра)",
-            sql: "1. Ремонты в текущем году:\n   SELECT Помещения.* FROM Помещения\n   JOIN Ремонты ON Помещения.ID = Ремонты.ID_Помещения\n   WHERE YEAR(Ремонты.Дата_начала) = YEAR(GETDATE());\n\n2. Поиск по фрагменту ФИО:\n   SELECT * FROM Сотрудники WHERE ФИО LIKE '%Иван%';\n\n3. Сводка по этажам и месяцам:\n   SELECT Помещения.Этаж, MONTH(Ремонты.Дата_начала) AS Месяц, COUNT(*)\n   FROM Помещения JOIN Ремонты ON Помещения.ID = Ремонты.ID_Помещения\n   GROUP BY Помещения.Этаж, MONTH(Ремонты.Дата_начала);",
-            sample: `<table>
-                <tr><th>Этаж</th><th>Месяц</th><th>Кол-во ремонтов</th></tr>
-                <tr><td>1</td><td>3</td><td>2</td></tr>
-                <tr><td>2</td><td>3</td><td>1</td></tr>
-                <tr><td>3</td><td>5</td><td>4</td></tr>
-            </table>`
-        }, {
+            sql: "1. SELECT Помещения.* FROM Помещения\n   JOIN Ремонты ON Помещения.ID = Ремонты.ID_Помещения\n   WHERE YEAR(Ремонты.Дата_начала) = YEAR(CURRENT_DATE);\n2. SELECT * FROM Сотрудники WHERE ФИО LIKE '%Иван%';\n3. SELECT Помещения.Этаж, MONTH(Ремонты.Дата_начала) AS Месяц, COUNT(*)\n   FROM Помещения JOIN Ремонты ...\n   GROUP BY Помещения.Этаж, MONTH(Ремонты.Дата_начала);",
+            sample: `<table><tr><th>Этаж</th><th>Месяц</th><th>Кол-во</th></tr><tr><td>1</td><td>3</td><td>2</td></tr><tr><td>2</td><td>3</td><td>1</td></tr></table>`
+        },
+        {
             number: 4,
-            short: "Интернет-магазин: структура, SQL — товары дороже 200 грн, купленные после 04.2013.",
+            category: "sql",
+            short: "Интернет-магазин: товары дороже 200 грн, купленные после 04.2013.",
             task: "Вывести названия и цены товаров, стоимость которых превышает 200 грн и которые были заказаны после 1 апреля 2013 года.",
             tables: "• Товары (ID, Название, Цена)\n• Заказы (ID, Дата)\n• ДеталиЗаказа (ID_Заказа, ID_Товара)",
             sql: "SELECT DISTINCT Товары.Название, Товары.Цена\nFROM Товары\nJOIN ДеталиЗаказа ON Товары.ID = ДеталиЗаказа.ID_Товара\nJOIN Заказы ON ДеталиЗаказа.ID_Заказа = Заказы.ID\nWHERE Товары.Цена > 200 AND Заказы.Дата > '2013-04-01';",
-            sample: `<table>
-                <tr><th>Название</th><th>Цена (грн)</th></tr>
-                <tr><td>Ноутбук Acer</td><td>450</td></tr>
-                <tr><td>Смартфон Samsung</td><td>320</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Название</th><th>Цена</th></tr><tr><td>Ноутбук Acer</td><td>450</td></tr><tr><td>Смартфон Samsung</td><td>320</td></tr></table>`
+        },
+        {
             number: 5,
-            short: "Университет: общее кол-во компьютеров по кафедрам, средний метраж по кафедре, юбиляры в следующем месяце.",
-            task: "1. Общее количество компьютеров по каждой кафедре.\n2. Средняя площадь помещений для заданной кафедры.\n3. Сотрудники, у которых день рождения в следующем месяце и возраст кратен 5 (юбиляры).",
+            category: "sql",
+            short: "Университет: компьютеры по кафедрам, средняя площадь, юбиляры в следующем месяце.",
+            task: "1. Общее количество компьютеров по каждой кафедре.\n2. Средняя площадь помещений для заданной кафедры.\n3. Сотрудники с днём рождения в следующем месяце и возрастом, кратным 5.",
             tables: "• Кафедры (ID, Название)\n• Помещения (ID, Кафедра, Площадь, Компьютеры)\n• Сотрудники (ID, ФИО, ДатаРождения, Кафедра)",
-            sql: "1. Компьютеры по кафедрам:\n   SELECT Кафедра, SUM(Компьютеры) FROM Помещения GROUP BY Кафедра;\n\n2. Средняя площадь по кафедре 'Физика':\n   SELECT AVG(Площадь) FROM Помещения WHERE Кафедра = (SELECT ID FROM Кафедры WHERE Название='Физика');\n\n3. Юбиляры (50,55,60...):\n   SELECT * FROM Сотрудники\n   WHERE MONTH(ДатаРождения) = MONTH(DATEADD(m, 1, GETDATE()))\n     AND (YEAR(GETDATE()) - YEAR(ДатаРождения)) % 5 = 0;",
-            sample: `<table>
-                <tr><th>Кафедра</th><th>Компьютеров</th></tr>
-                <tr><td>Математика</td><td>45</td></tr>
-                <tr><td>Физика</td><td>30</td></tr>
-                <tr><td>Информатика</td><td>60</td></tr>
-            </table>`
-        }, {
+            sql: "1. SELECT Кафедра, SUM(Компьютеры) FROM Помещения GROUP BY Кафедра;\n2. SELECT AVG(Площадь) FROM Помещения WHERE Кафедра = (SELECT ID FROM Кафедры WHERE Название='Физика');\n3. SELECT * FROM Сотрудники\n   WHERE MONTH(ДатаРождения) = MONTH(CURRENT_DATE + INTERVAL 1 MONTH)\n     AND (YEAR(CURRENT_DATE) - YEAR(ДатаРождения)) % 5 = 0;",
+            sample: `<table><tr><th>Кафедра</th><th>Компьютеров</th></tr><tr><td>Математика</td><td>45</td></tr><tr><td>Физика</td><td>30</td></tr></table>`
+        },
+        {
             number: 6,
-            short: "Интернет-магазин: структура, SQL — сортировка покупателей по фамилии от Я до А (убывание), только физ. лица.",
-            task: "Вывести ФИО физических лиц-покупателей, отсортировав их по убыванию фамилии (от Я до А).",
+            category: "sql",
+            short: "Интернет-магазин: сортировка физ. лиц по фамилии от Я до А.",
+            task: "Вывести ФИО физических лиц-покупателей, отсортировав по убыванию фамилии.",
             tables: "• Клиенты (ID, ФИО, ТипЛица – 'физ' или 'юри')",
             sql: "SELECT ФИО FROM Клиенты WHERE ТипЛица = 'физ' ORDER BY ФИО DESC;",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Яковлев Сергей</td></tr>
-                <tr><td>Петрова Анна</td></tr>
-                <tr><td>Иванов Иван</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Яковлев Сергей</td></tr><tr><td>Петрова Анна</td></tr></table>`
+        },
+        {
             number: 7,
-            short: "Университет: список помещений с неисправными замками на кафедре, сотрудники кафедры, молодые специалисты (стаж<3 лет).",
-            task: "1. Список помещений с неисправными замками для указанной кафедры.\n2. Все сотрудники этой кафедры.\n3. Молодые специалисты (стаж работы менее 3 лет).",
+            category: "sql",
+            short: "Университет: помещения с неисправными замками, сотрудники кафедры, молодые специалисты.",
+            task: "1. Список помещений с неисправными замками для указанной кафедры.\n2. Все сотрудники этой кафедры.\n3. Молодые специалисты (стаж < 3 лет).",
             tables: "• Помещения (ID, Кафедра)\n• Замки (ID_Помещения, Исправен – TRUE/FALSE)\n• Сотрудники (ID, ФИО, Дата_приёма, Кафедра)",
-            sql: "1. Помещения с неисправными замками:\n   SELECT Помещения.* FROM Помещения\n   JOIN Замки ON Помещения.ID = Замки.ID_Помещения\n   WHERE Помещения.Кафедра = (SELECT ID FROM Кафедры WHERE Название='...') AND Замки.Исправен = FALSE;\n\n2. Сотрудники кафедры:\n   SELECT * FROM Сотрудники WHERE Кафедра = (SELECT ID FROM Кафедры WHERE Название='...');\n\n3. Стаж < 3 лет:\n   SELECT * FROM Сотрудники\n   WHERE DATEDIFF(year, Дата_приёма, GETDATE()) < 3;",
-            sample: `<table>
-                <tr><th>Помещение</th><th>Исправность замка</th></tr>
-                <tr><td>Ауд. 201</td><td>Неисправен</td></tr>
-                <tr><td>Ауд. 305</td><td>Неисправен</td></tr>
-            </table>`
-        }, {
+            sql: "1. SELECT Помещения.* FROM Помещения\n   JOIN Замки ON Помещения.ID = Замки.ID_Помещения\n   WHERE Помещения.Кафедра = (SELECT ID FROM Кафедры WHERE Название='...') AND Замки.Исправен = FALSE;\n2. SELECT * FROM Сотрудники WHERE Кафедра = (SELECT ID FROM Кафедры WHERE Название='...');\n3. SELECT * FROM Сотрудники\n   WHERE DATEDIFF(CURRENT_DATE, Дата_приёма) < 3*365;",
+            sample: `<table><tr><th>Помещение</th><th>Замок</th></tr><tr><td>Ауд. 201</td><td>Неисправен</td></tr></table>`
+        },
+        {
             number: 8,
-            short: "Интернет-магазин: структура, SQL — сортировка по фамилии от А до Я, купившие товар в диапазоне 230–500 грн.",
-            task: "Вывести ФИО клиентов, которые покупали товары стоимостью от 230 до 500 грн, отсортировав по возрастанию фамилии.",
-            tables: "• Клиенты (ID, ФИО)\n• Заказы (ID, ID_Клиента)\n• ДеталиЗаказа (ID_Заказа, ID_Товара)\n• Товары (ID, Цена)",
+            category: "sql",
+            short: "Интернет-магазин: клиенты, купившие товары 230–500 грн, сортировка по фамилии.",
+            task: "Вывести ФИО клиентов, покупавших товары стоимостью 230–500 грн, отсортировав по возрастанию фамилии.",
+            tables: "• Клиенты, Заказы, ДеталиЗаказа, Товары",
             sql: "SELECT DISTINCT Клиенты.ФИО FROM Клиенты\nJOIN Заказы ON Клиенты.ID = Заказы.ID_Клиента\nJOIN ДеталиЗаказа ON Заказы.ID = ДеталиЗаказа.ID_Заказа\nJOIN Товары ON ДеталиЗаказа.ID_Товара = Товары.ID\nWHERE Товары.Цена BETWEEN 230 AND 500\nORDER BY Клиенты.ФИО ASC;",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Алексеева Мария</td></tr>
-                <tr><td>Гришин Олег</td></tr>
-                <tr><td>Смирнова Екатерина</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Алексеева Мария</td></tr><tr><td>Гришин Олег</td></tr></table>`
+        },
+        {
             number: 9,
-            short: "Университет: поиск сотрудника по неполным данным, общее число компьютеров по кафедрам, средний возраст.",
-            task: "1. Найти сотрудника по неполному ФИО (например, по части фамилии).\n2. Общее число компьютеров по каждой кафедре.\n3. Средний возраст сотрудников.",
+            category: "sql",
+            short: "Университет: поиск по неполному ФИО, компьютеры по кафедрам, средний возраст.",
+            task: "1. Найти сотрудника по части ФИО.\n2. Общее число компьютеров по кафедрам.\n3. Средний возраст сотрудников.",
             tables: "• Сотрудники (ID, ФИО, ДатаРождения)\n• Помещения (ID, Кафедра, Компьютеры)",
-            sql: "1. Поиск: SELECT * FROM Сотрудники WHERE ФИО LIKE '%Петр%';\n2. Компьютеры: SELECT Кафедра, SUM(Компьютеры) FROM Помещения GROUP BY Кафедра;\n3. Средний возраст: SELECT AVG(DATEDIFF(year, ДатаРождения, GETDATE())) FROM Сотрудники;",
-            sample: `<table>
-                <tr><th>Кафедра</th><th>Компьютеров</th></tr>
-                <tr><td>Математика</td><td>45</td></tr>
-                <tr><td>Физика</td><td>30</td></tr>
-            </table>`
-        }, {
+            sql: "1. SELECT * FROM Сотрудники WHERE ФИО LIKE '%Петр%';\n2. SELECT Кафедра, SUM(Компьютеры) FROM Помещения GROUP BY Кафедра;\n3. SELECT AVG(DATEDIFF(CURRENT_DATE, ДатаРождения)/365) FROM Сотрудники;",
+            sample: `<table><tr><th>Кафедра</th><th>Компьютеров</th></tr><tr><td>Математика</td><td>45</td></tr></table>`
+        },
+        {
             number: 10,
-            short: "Оптовая торговля: структура, SQL — заказы свыше 5000 грн после 03.2014.",
+            category: "sql",
+            short: "Оптовая торговля: заказы свыше 5000 грн после 03.2014.",
             task: "Найти все заказы на сумму более 5000 грн, сделанные после 1 марта 2014 года.",
             tables: "• Заказчики (ID, Название, Тип)\n• Заказы (ID, ID_Заказчика, Дата, Сумма)",
             sql: "SELECT * FROM Заказы WHERE Сумма > 5000 AND Дата > '2014-03-01';",
-            sample: `<table>
-                <tr><th>ID заказа</th><th>Сумма</th><th>Дата</th></tr>
-                <tr><td>101</td><td>7200</td><td>2014-03-15</td></tr>
-                <tr><td>105</td><td>8500</td><td>2014-04-02</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ID заказа</th><th>Сумма</th><th>Дата</th></tr><tr><td>101</td><td>7200</td><td>2014-03-15</td></tr></table>`
+        },
+        {
             number: 11,
-            short: "Жилищная контора: дома, улицы, квартиры. Список 3-комнатных в доме, данные по улице, квартиры >4 чел и площ<30.",
-            task: "1. Список 3-комнатных квартир в указанном доме.\n2. Данные о всех домах на указанной улице.\n3. Квартиры, где проживает более 4 человек, а площадь меньше 30 м².",
-            tables: "• Улицы (ID, Название)\n• Дома (ID, Улица, Номер, Этажей, Подъездов, Квартир, Старший)\n• Квартиры (ID, Дом, Номер, Комнат, Площадь, Жильцов)",
-            sql: "1. 3-комнатные:\n   SELECT * FROM Квартиры WHERE Дом = (SELECT ID FROM Дома WHERE Улица=(SELECT ID FROM Улицы WHERE Название='...') AND Номер=...) AND Комнат = 3;\n2. Данные по улице:\n   SELECT * FROM Дома WHERE Улица = (SELECT ID FROM Улицы WHERE Название='...');\n3. >4 чел и площ<30:\n   SELECT * FROM Квартиры WHERE Жильцов > 4 AND Площадь < 30;",
-            sample: `<table>
-                <tr><th>Квартира</th><th>Жильцов</th><th>Площадь</th></tr>
-                <tr><td>5</td><td>5</td><td>28.5</td></tr>
-                <tr><td>12</td><td>6</td><td>25.0</td></tr>
-            </table>`
-        }, {
+            category: "sql",
+            short: "Жилищная контора: 3-комнатные в доме, данные по улице, квартиры >4 чел и площ<30.",
+            task: "1. Список 3-комнатных квартир в указанном доме.\n2. Данные о всех домах на указанной улице.\n3. Квартиры с >4 жильцами и площадью <30.",
+            tables: "• Улицы, Дома, Квартиры",
+            sql: "1. SELECT * FROM Квартиры WHERE Дом = (SELECT ID FROM Дома WHERE Улица=(SELECT ID FROM Улицы WHERE Название='...') AND Номер=...) AND Комнат = 3;\n2. SELECT * FROM Дома WHERE Улица = (SELECT ID FROM Улицы WHERE Название='...');\n3. SELECT * FROM Квартиры WHERE Жильцов > 4 AND Площадь < 30;",
+            sample: `<table><tr><th>Квартира</th><th>Жильцов</th><th>Площадь</th></tr><tr><td>5</td><td>5</td><td>28.5</td></tr></table>`
+        },
+        {
             number: 12,
-            short: "Оптовая торговля: структура, SQL — сортировка заказчиков-юридических лиц от Я до А.",
-            task: "Вывести названия юридических лиц-заказчиков, отсортировав их по убыванию (от Я до А).",
+            category: "sql",
+            short: "Оптовая торговля: сортировка юр. лиц от Я до А.",
+            task: "Вывести названия юридических лиц-заказчиков, отсортировав по убыванию.",
             tables: "• Заказчики (ID, Название, Тип – 'юридическое' или 'физическое')",
             sql: "SELECT Название FROM Заказчики WHERE Тип = 'юридическое' ORDER BY Название DESC;",
-            sample: `<table>
-                <tr><th>Название</th></tr>
-                <tr><td>Янтарь-Торг</td></tr>
-                <tr><td>СтройКомплект</td></tr>
-                <tr><td>Альфа-Групп</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Название</th></tr><tr><td>Янтарь-Торг</td></tr><tr><td>СтройКомплект</td></tr></table>`
+        },
+        {
             number: 13,
-            short: "Жилищная контора: адреса многодетных (детей>=3), пустующие квартиры, удельный метраж на человека.",
-            task: "1. Адреса квартир, где проживает не менее 3 детей.\n2. Список пустующих квартир (без жильцов).\n3. Для каждой квартиры вычислить удельную площадь на человека (площадь / кол-во жильцов).",
+            category: "sql",
+            short: "Жилищная контора: адреса многодетных, пустующие, удельный метраж.",
+            task: "1. Адреса квартир с >=3 детьми.\n2. Список пустующих квартир.\n3. Удельная площадь на человека.",
             tables: "• Квартиры (ID, Номер, Площадь, Жильцов)\n• Жильцы (ID_Квартиры, ФИО, Возраст, Статус – ребёнок/взрослый)",
-            sql: "1. Многодетные (>=3 детей):\n   SELECT Квартиры.* FROM Квартиры\n   WHERE (SELECT COUNT(*) FROM Жильцы WHERE Жильцы.ID_Квартиры = Квартиры.ID AND Возраст < 18) >= 3;\n2. Пустующие:\n   SELECT * FROM Квартиры WHERE Жильцов = 0;\n3. Удельный метраж:\n   SELECT ID, Площадь / NULLIF(Жильцов, 0) AS УдМетраж FROM Квартиры;",
-            sample: `<table>
-                <tr><th>Квартира</th><th>Удельный метраж</th></tr>
-                <tr><td>101</td><td>8.2</td></tr>
-                <tr><td>105</td><td>12.5</td></tr>
-            </table>`
-        }, {
+            sql: "1. SELECT Квартиры.* FROM Квартиры\n   WHERE (SELECT COUNT(*) FROM Жильцы WHERE Жильцы.ID_Квартиры = Квартиры.ID AND Возраст < 18) >= 3;\n2. SELECT * FROM Квартиры WHERE Жильцов = 0;\n3. SELECT ID, Площадь / NULLIF(Жильцов, 0) AS УдМетраж FROM Квартиры;",
+            sample: `<table><tr><th>Квартира</th><th>Уд. метраж</th></tr><tr><td>101</td><td>8.2</td></tr></table>`
+        },
+        {
             number: 14,
-            short: "Оптовая торговля: структура, SQL — сортировка заказчиков по убыванию (Я–А) с заказами >50 контейнеров.",
-            task: "Вывести названия заказчиков, у которых были заказы более чем на 50 контейнеров, отсортировав по убыванию.",
+            category: "sql",
+            short: "Оптовая торговля: заказчики с заказами >50 контейнеров, сортировка по убыванию.",
+            task: "Вывести названия заказчиков с заказами >50 контейнеров, отсортировав по убыванию.",
             tables: "• Заказчики (ID, Название)\n• Заказы (ID_Заказчика, Контейнеры)",
             sql: "SELECT DISTINCT Заказчики.Название FROM Заказчики\nJOIN Заказы ON Заказчики.ID = Заказы.ID_Заказчика\nWHERE Заказы.Контейнеры > 50\nORDER BY Заказчики.Название DESC;",
-            sample: `<table>
-                <tr><th>Название</th></tr>
-                <tr><td>ТрансЛогистик</td></tr>
-                <tr><td>Мега-Торг</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Название</th></tr><tr><td>ТрансЛогистик</td></tr><tr><td>Мега-Торг</td></tr></table>`
+        },
+        {
             number: 15,
-            short: "Жилищная контора: данные о домах по улице, сводка по работающим/пенсионерам/инвалидам/детям, телефонизированные квартиры.",
-            task: "1. Вывести все дома на указанной улице.\n2. По каждому дому подсчитать количество работающих, пенсионеров, инвалидов и детей.\n3. Подсчитать общее число жильцов в телефонизированных квартирах.",
-            tables: "• Улицы, Дома, Квартиры, Жильцы (с полями Статус – работающий, пенсионер, инвалид, ребёнок; и поле Телефон в Квартирах)",
-            sql: "1. SELECT * FROM Дома WHERE Улица = (SELECT ID FROM Улицы WHERE Название='...');\n2. Сводка по дому:\n   SELECT Дом,\n          COUNT(CASE WHEN Статус='работающий' THEN 1 END) AS Работающих,\n          COUNT(CASE WHEN Статус='пенсионер' THEN 1 END) AS Пенсионеров,\n          COUNT(CASE WHEN Статус='инвалид' THEN 1 END) AS Инвалидов,\n          COUNT(CASE WHEN Статус='ребёнок' THEN 1 END) AS Детей\n   FROM Жильцы\n   JOIN Квартиры ON Жильцы.ID_Квартиры = Квартиры.ID\n   GROUP BY Квартиры.Дом;\n3. Телефонизированные:\n   SELECT SUM(Жильцов) FROM Квартиры WHERE Телефон = TRUE;",
-            sample: `<table>
-                <tr><th>Дом</th><th>Работающих</th><th>Пенсионеров</th><th>Детей</th></tr>
-                <tr><td>5</td><td>10</td><td>4</td><td>6</td></tr>
-                <tr><td>7</td><td>8</td><td>3</td><td>5</td></tr>
-            </table>`
-        }, {
+            category: "sql",
+            short: "Жилищная контора: дома по улице, сводка по работающим/пенсионерам/детям, телефонизированные.",
+            task: "1. Вывести все дома на указанной улице.\n2. По каждому дому подсчитать работающих, пенсионеров, инвалидов, детей.\n3. Общее число жильцов в телефонизированных квартирах.",
+            tables: "• Улицы, Дома, Квартиры, Жильцы (Статус – работающий, пенсионер, инвалид, ребёнок; Телефон в Квартирах)",
+            sql: "1. SELECT * FROM Дома WHERE Улица = (SELECT ID FROM Улицы WHERE Название='...');\n2. SELECT Дом,\n   COUNT(CASE WHEN Статус='работающий' THEN 1 END) AS Работающих,\n   COUNT(CASE WHEN Статус='пенсионер' THEN 1 END) AS Пенсионеров,\n   COUNT(CASE WHEN Статус='инвалид' THEN 1 END) AS Инвалидов,\n   COUNT(CASE WHEN Статус='ребёнок' THEN 1 END) AS Детей\n   FROM Жильцы JOIN Квартиры ON Жильцы.ID_Квартиры = Квартиры.ID\n   GROUP BY Квартиры.Дом;\n3. SELECT SUM(Жильцов) FROM Квартиры WHERE Телефон = TRUE;",
+            sample: `<table><tr><th>Дом</th><th>Работающих</th><th>Пенсионеров</th><th>Детей</th></tr><tr><td>5</td><td>10</td><td>4</td><td>6</td></tr></table>`
+        },
+        {
             number: 16,
-            short: "Оптовая торговля: структура, SQL — сумма доходов от холодильников NORD.",
+            category: "sql",
+            short: "Оптовая торговля: сумма продаж холодильников NORD.",
             task: "Рассчитать общую сумму продаж холодильников марки NORD.",
             tables: "• Товары (ID, Название, Производитель)\n• Продажи (ID_Товара, Сумма)",
             sql: "SELECT SUM(Продажи.Сумма) FROM Продажи\nJOIN Товары ON Продажи.ID_Товара = Товары.ID\nWHERE Товары.Название LIKE '%холодильник%' AND Товары.Производитель = 'NORD';",
-            sample: `<table>
-                <tr><th>Общая сумма</th></tr>
-                <tr><td>1 245 000 грн</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Общая сумма</th></tr><tr><td>1 245 000 грн</td></tr></table>`
+        },
+        {
             number: 17,
-            short: "Подразделение: рабочие, станки. Список станков стоимостью 100-200 т.р., данные по типу, энергопотребление на рабочего.",
-            task: "1. Список станков стоимостью от 100 до 200 тыс. рублей.\n2. Данные о станках указанного типа (например, токарные).\n3. Для каждого станка вычислить энергопотребление на одного рабочего (Энергия / Кол-во_рабочих).",
+            category: "sql",
+            short: "Подразделение: станки стоимостью 100-200 т.р., данные по типу, энергопотребление на рабочего.",
+            task: "1. Станки стоимостью 100–200 тыс. руб.\n2. Данные о станках указанного типа.\n3. Энергопотребление на одного рабочего.",
             tables: "• Станки (ID, Название, Цена, Тип, Энергия, Кол-во_рабочих)",
             sql: "1. SELECT * FROM Станки WHERE Цена BETWEEN 100000 AND 200000;\n2. SELECT * FROM Станки WHERE Тип='токарный';\n3. SELECT Название, Энергия / Кол-во_рабочих AS Энергия_на_рабочего FROM Станки WHERE Кол-во_рабочих > 0;",
-            sample: `<table>
-                <tr><th>Станок</th><th>Энергия на рабочего</th></tr>
-                <tr><td>Токарный-1</td><td>2.5 кВт</td></tr>
-                <tr><td>Фрезерный-3</td><td>1.8 кВт</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Станок</th><th>Энергия на рабочего</th></tr><tr><td>Токарный-1</td><td>2.5 кВт</td></tr></table>`
+        },
+        {
             number: 18,
-            short: "Гостиница: структура, SQL — клиенты не пожилого возраста, снимавшие 26 комнату.",
-            task: "Найти клиентов (не пожилых, т.е. возраст <= 60 лет), которые бронировали комнату № 26.",
+            category: "sql",
+            short: "Гостиница: клиенты не пожилого возраста, снимавшие 26 комнату.",
+            task: "Найти клиентов (возраст <=60 лет), бронировавших комнату №26.",
             tables: "• Клиенты (ID, ФИО, ДатаРождения)\n• Комнаты (ID, Номер)\n• Бронирование (ID_Клиента, ID_Комнаты)",
-            sql: "SELECT Клиенты.ФИО FROM Клиенты\nJOIN Бронирование ON Клиенты.ID = Бронирование.ID_Клиента\nWHERE Бронирование.ID_Комнаты = (SELECT ID FROM Комнаты WHERE Номер=26)\n  AND DATEDIFF(year, Клиенты.ДатаРождения, GETDATE()) <= 60;",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Сидоров Александр</td></tr>
-                <tr><td>Кузнецова Ольга</td></tr>
-            </table>`
-        }, {
+            sql: "SELECT Клиенты.ФИО FROM Клиенты\nJOIN Бронирование ON Клиенты.ID = Бронирование.ID_Клиента\nWHERE Бронирование.ID_Комнаты = (SELECT ID FROM Комнаты WHERE Номер=26)\n  AND DATEDIFF(CURRENT_DATE, Клиенты.ДатаРождения)/365 <= 60;",
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Сидоров Александр</td></tr></table>`
+        },
+        {
             number: 19,
+            category: "sql",
             short: "Подразделение: бригада первой смены, станки до года, список энергопотребления.",
-            task: "1. Список рабочих бригады, работающих в первую смену.\n2. Станки, выпущенные до указанного года (например, 2000).\n3. Список станков с указанием энергопотребления.",
+            task: "1. Рабочие первой смены.\n2. Станки, выпущенные до 2000 года.\n3. Список станков с энергопотреблением.",
             tables: "• Рабочие (ID, ФИО, Смена)\n• Станки (ID, Название, Год_выпуска, Энергия)",
             sql: "1. SELECT * FROM Рабочие WHERE Смена = 1;\n2. SELECT * FROM Станки WHERE Год_выпуска < 2000;\n3. SELECT Название, Энергия FROM Станки;",
-            sample: `<table>
-                <tr><th>Станок</th><th>Энергия (кВт)</th></tr>
-                <tr><td>Станок А</td><td>5.5</td></tr>
-                <tr><td>Станок Б</td><td>7.2</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Станок</th><th>Энергия</th></tr><tr><td>Станок А</td><td>5.5</td></tr></table>`
+        },
+        {
             number: 20,
-            short: "Гостиница: структура, SQL — комнаты кроме повышенного комфорта, забронированные после 06.2014.",
-            task: "Вывести номера комнат (кроме класса «повышенный комфорт»), которые были забронированы после 1 июня 2014 года.",
-            tables: "• Комнаты (ID, Номер, Тип – 'стандарт', 'люкс', 'повышенный комфорт')\n• Бронирование (ID_Комнаты, Дата_заезда)",
+            category: "sql",
+            short: "Гостиница: комнаты кроме повышенного комфорта, забронированные после 06.2014.",
+            task: "Вывести номера комнат (кроме класса «повышенный комфорт»), забронированных после 1 июня 2014.",
+            tables: "• Комнаты (ID, Номер, Тип)\n• Бронирование (ID_Комнаты, Дата_заезда)",
             sql: "SELECT DISTINCT Комнаты.Номер FROM Комнаты\nJOIN Бронирование ON Комнаты.ID = Бронирование.ID_Комнаты\nWHERE Комнаты.Тип != 'повышенный комфорт' AND Бронирование.Дата_заезда > '2014-06-01';",
-            sample: `<table>
-                <tr><th>Номер комнаты</th></tr>
-                <tr><td>101</td></tr>
-                <tr><td>203</td></tr>
-                <tr><td>305</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Номер</th></tr><tr><td>101</td></tr><tr><td>203</td></tr></table>`
+        },
+        {
             number: 21,
+            category: "sql",
             short: "Подразделение: станки в три смены, рабочие 1 или 3 смены, суммарная электроэнергия.",
-            task: "1. Станки, работающие в три смены.\n2. Рабочие, работающие в первую или третью смену.\n3. Общая потребляемая электроэнергия всеми станками.",
+            task: "1. Станки, работающие в три смены.\n2. Рабочие, работающие в первую или третью смену.\n3. Общая потребляемая электроэнергия.",
             tables: "• Станки (ID, Название, Смены_работы, Энергия)\n• Рабочие (ID, Смена)",
             sql: "1. SELECT * FROM Станки WHERE Смены_работы = 3;\n2. SELECT * FROM Рабочие WHERE Смена IN (1, 3);\n3. SELECT SUM(Энергия) FROM Станки;",
-            sample: `<table>
-                <tr><th>Общая энергия</th></tr>
-                <tr><td>45.2 кВт</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Общая энергия</th></tr><tr><td>45.2 кВт</td></tr></table>`
+        },
+        {
             number: 22,
-            short: "Гостиница: структура, SQL — сортировка клиентов пожилого возраста по фамилии от Я до А.",
-            task: "Вывести ФИО клиентов старше 60 лет, отсортировав по убыванию (от Я до А).",
+            category: "sql",
+            short: "Гостиница: клиенты пожилого возраста, сортировка от Я до А.",
+            task: "Вывести ФИО клиентов старше 60 лет, отсортировав по убыванию.",
             tables: "• Клиенты (ID, ФИО, ДатаРождения)",
-            sql: "SELECT ФИО FROM Клиенты WHERE DATEDIFF(year, ДатаРождения, GETDATE()) > 60 ORDER BY ФИО DESC;",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Яковлев Иван</td></tr>
-                <tr><td>Петров Пётр</td></tr>
-            </table>`
-        }, {
+            sql: "SELECT ФИО FROM Клиенты WHERE DATEDIFF(CURRENT_DATE, ДатаРождения)/365 > 60 ORDER BY ФИО DESC;",
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Яковлев Иван</td></tr><tr><td>Петров Пётр</td></tr></table>`
+        },
+        {
             number: 23,
-            short: "Подразделение: общее кол-во и средняя стоимость станков производителя, кол-во токарных до 200мм, суммарная энергия.",
-            task: "1. Количество и средняя стоимость станков заданного производителя.\n2. Количество токарных станков с диаметром детали до 200 мм.\n3. Суммарная энергия всех станков.",
+            category: "sql",
+            short: "Подразделение: кол-во и средняя стоимость станков производителя, токарные до 200мм.",
+            task: "1. Количество и средняя стоимость станков заданного производителя.\n2. Количество токарных станков с диаметром <=200 мм.\n3. Суммарная энергия всех станков.",
             tables: "• Станки (ID, Производитель, Тип, Диаметр_детали, Цена, Энергия)",
             sql: "1. SELECT COUNT(*), AVG(Цена) FROM Станки WHERE Производитель = '...';\n2. SELECT COUNT(*) FROM Станки WHERE Тип = 'токарный' AND Диаметр_детали <= 200;\n3. SELECT SUM(Энергия) FROM Станки;",
-            sample: `<table>
-                <tr><th>Производитель</th><th>Кол-во</th><th>Ср. цена</th></tr>
-                <tr><td>БелАЗ</td><td>12</td><td>150 000</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Производитель</th><th>Кол-во</th><th>Ср. цена</th></tr><tr><td>БелАЗ</td><td>12</td><td>150 000</td></tr></table>`
+        },
+        {
             number: 24,
-            short: "Гостиница: структура, SQL — номера клиентов, оплативших полную сумму и остающихся на новогоднюю ночь.",
-            task: "Найти идентификаторы клиентов, которые полностью оплатили бронирование и чей период проживания включает ночь с 31 декабря на 1 января.",
+            category: "sql",
+            short: "Гостиница: клиенты, оплатившие полную сумму и остающиеся на новогоднюю ночь.",
+            task: "Найти ID клиентов, полностью оплативших бронирование и проживающих в новогоднюю ночь (31.12–01.01).",
             tables: "• Бронирование (ID_Клиента, Оплачено, Полная_стоимость, Дата_заезда, Дата_выезда)",
             sql: "SELECT ID_Клиента FROM Бронирование\nWHERE Оплачено = Полная_стоимость\n  AND Дата_заезда <= '2024-12-31' AND Дата_выезда >= '2025-01-01';",
-            sample: `<table>
-                <tr><th>ID клиента</th></tr>
-                <tr><td>42</td></tr>
-                <tr><td>78</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ID клиента</th></tr><tr><td>42</td></tr></table>`
+        },
+        {
             number: 25,
-            short: "Общежитие: комнаты, жильцы. Средний возраст, старшие в комнатах с детьми, комнаты с выбитыми стёклами.",
-            task: "1. Средний возраст всех жильцов.\n2. Старшие по комнатам, в которых есть дети.\n3. Комнаты с выбитыми стёклами.",
-            tables: "• Комнаты (ID, Номер, Старший, Стёкла_целы – TRUE/FALSE)\n• Жильцы (ID_Комнаты, ФИО, ДатаРождения, Статус – 'ребёнок' или 'взрослый')",
-            sql: "1. SELECT AVG(DATEDIFF(year, ДатаРождения, GETDATE())) FROM Жильцы;\n2. SELECT DISTINCT Комнаты.Старший FROM Комнаты\n   WHERE EXISTS (SELECT 1 FROM Жильцы WHERE Жильцы.ID_Комнаты = Комнаты.ID AND Жильцы.Статус = 'ребёнок');\n3. SELECT * FROM Комнаты WHERE Стёкла_целы = FALSE;",
-            sample: `<table>
-                <tr><th>Комната</th><th>Стёкла</th></tr>
-                <tr><td>101</td><td>Выбиты</td></tr>
-                <tr><td>205</td><td>Выбиты</td></tr>
-            </table>`
-        }, {
+            category: "sql",
+            short: "Общежитие: средний возраст, старшие в комнатах с детьми, комнаты с выбитыми стёклами.",
+            task: "1. Средний возраст всех жильцов.\n2. Старшие по комнатам, где есть дети.\n3. Комнаты с выбитыми стёклами.",
+            tables: "• Комнаты (ID, Номер, Старший, Стёкла_целы – TRUE/FALSE)\n• Жильцы (ID_Комнаты, ФИО, ДатаРождения, Статус – 'ребёнок'/'взрослый')",
+            sql: "1. SELECT AVG(DATEDIFF(CURRENT_DATE, ДатаРождения)/365) FROM Жильцы;\n2. SELECT DISTINCT Комнаты.Старший FROM Комнаты\n   WHERE EXISTS (SELECT 1 FROM Жильцы WHERE Жильцы.ID_Комнаты = Комнаты.ID AND Жильцы.Статус = 'ребёнок');\n3. SELECT * FROM Комнаты WHERE Стёкла_целы = FALSE;",
+            sample: `<table><tr><th>Комната</th><th>Стёкла</th></tr><tr><td>101</td><td>Выбиты</td></tr></table>`
+        },
+        {
             number: 26,
-            short: "Отдел кадров: структура, SQL — трудоустроенные после 02.2012, фамилия на 'Б'.",
-            task: "Найти сотрудников, принятых на работу после 1 февраля 2012 года, у которых фамилия начинается на букву 'Б'.",
+            category: "sql",
+            short: "Отдел кадров: трудоустроенные после 02.2012, фамилия на 'Б'.",
+            task: "Найти сотрудников, принятых после 1 февраля 2012, фамилия начинается на 'Б'.",
             tables: "• Сотрудники (ID, ФИО, Дата_приёма)",
             sql: "SELECT * FROM Сотрудники WHERE Дата_приёма > '2012-02-01' AND ФИО LIKE 'Б%';",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Дата приёма</th></tr>
-                <tr><td>Борисов Сергей</td><td>2012-02-15</td></tr>
-                <tr><td>Белова Анна</td><td>2012-03-01</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th><th>Дата приёма</th></tr><tr><td>Борисов Сергей</td><td>2012-02-15</td></tr></table>`
+        },
+        {
             number: 27,
+            category: "sql",
             short: "Общежитие: старшие по этажам, должники за 2+ месяца, комнаты с выбитыми стёклами и детьми.",
-            task: "1. Список старших по каждому этажу.\n2. Жильцы, имеющие задолженность за 2 и более месяца.\n3. Комнаты, в которых одновременно есть выбитые стёкла и проживают дети.",
+            task: "1. Старшие по каждому этажу.\n2. Жильцы с долгом >=2 месяцев.\n3. Комнаты с выбитыми стёклами и детьми.",
             tables: "• Комнаты (ID, Этаж, Старший, Стёкла_целы)\n• Жильцы (ID_Комнаты, ФИО, Долг_месяцев, Статус)",
             sql: "1. SELECT Этаж, Старший FROM Комнаты GROUP BY Этаж, Старший;\n2. SELECT * FROM Жильцы WHERE Долг_месяцев >= 2;\n3. SELECT Комнаты.* FROM Комнаты\n   JOIN Жильцы ON Комнаты.ID = Жильцы.ID_Комнаты\n   WHERE Комнаты.Стёкла_целы = FALSE AND Жильцы.Статус = 'ребёнок';",
-            sample: `<table>
-                <tr><th>Этаж</th><th>Старший</th></tr>
-                <tr><td>1</td><td>Петров И.</td></tr>
-                <tr><td>2</td><td>Сидорова М.</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>Этаж</th><th>Старший</th></tr><tr><td>1</td><td>Петров И.</td></tr></table>`
+        },
+        {
             number: 28,
-            short: "Отдел кадров: структура, SQL — сортировка пожилых работников по фамилии от Я до А.",
-            task: "Вывести пожилых работников (мужчины >=60, женщины >=55) в порядке убывания фамилии.",
+            category: "sql",
+            short: "Отдел кадров: пожилые работники (м>=60, ж>=55), сортировка от Я до А.",
+            task: "Вывести пожилых работников в порядке убывания фамилии.",
             tables: "• Сотрудники (ID, ФИО, ДатаРождения, Пол)",
-            sql: "SELECT * FROM Сотрудники\nWHERE (Пол='М' AND DATEDIFF(year, ДатаРождения, GETDATE()) >= 60)\n   OR (Пол='Ж' AND DATEDIFF(year, ДатаРождения, GETDATE()) >= 55)\nORDER BY ФИО DESC;",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Возраст</th></tr>
-                <tr><td>Яковлев А.</td><td>62</td></tr>
-                <tr><td>Смирнов В.</td><td>65</td></tr>
-            </table>`
-        }, {
+            sql: "SELECT * FROM Сотрудники\nWHERE (Пол='М' AND DATEDIFF(CURRENT_DATE, ДатаРождения)/365 >= 60)\n   OR (Пол='Ж' AND ... >= 55)\nORDER BY ФИО DESC;",
+            sample: `<table><tr><th>ФИО</th><th>Возраст</th></tr><tr><td>Яковлев А.</td><td>62</td></tr></table>`
+        },
+        {
             number: 29,
-            short: "Общежитие: проживающие в комнате, дети до 7 лет не посещающие ДДУ, общее число детей студентов.",
-            task: "1. Список жильцов конкретной комнаты.\n2. Дети до 7 лет, которые не посещают дошкольное учреждение.\n3. Общее число детей, чьи родители являются студентами (если есть такая связь).",
-            tables: "• Комнаты (ID, Номер)\n• Жильцы (ID_Комнаты, ФИО, ДатаРождения, Статус – ребёнок/студент/другой, Посещает_ДДУ – TRUE/FALSE)",
-            sql: "1. SELECT * FROM Жильцы WHERE ID_Комнаты = (SELECT ID FROM Комнаты WHERE Номер = ...);\n2. SELECT * FROM Жильцы WHERE Статус = 'ребёнок' AND DATEDIFF(year, ДатаРождения, GETDATE()) < 7 AND Посещает_ДДУ = FALSE;\n3. SELECT COUNT(*) FROM Жильцы WHERE Статус = 'ребёнок' AND EXISTS (SELECT 1 FROM Жильцы AS Род WHERE Род.ID_Комнаты = Жильцы.ID_Комнаты AND Род.Статус = 'студент');",
-            sample: `<table>
-                <tr><th>Дети до 7 лет не в ДДУ</th></tr>
-                <tr><td>Смирнова А.</td></tr>
-                <tr><td>Козлов М.</td></tr>
-            </table>`
-        }, {
+            category: "sql",
+            short: "Общежитие: жильцы комнаты, дети до 7 не в ДДУ, число детей студентов.",
+            task: "1. Список жильцов конкретной комнаты.\n2. Дети до 7 лет, не посещающие ДДУ.\n3. Общее число детей студентов (родитель-студент).",
+            tables: "• Комнаты, Жильцы (Статус – ребёнок/студент/другой, Посещает_ДДУ – TRUE/FALSE)",
+            sql: "1. SELECT * FROM Жильцы WHERE ID_Комнаты = (SELECT ID FROM Комнаты WHERE Номер = ...);\n2. SELECT * FROM Жильцы WHERE Статус='ребёнок' AND DATEDIFF(CURRENT_DATE, ДатаРождения)/365 < 7 AND Посещает_ДДУ = FALSE;\n3. SELECT COUNT(*) FROM Жильцы WHERE Статус='ребёнок' AND EXISTS (SELECT 1 FROM Жильцы AS Род WHERE Род.ID_Комнаты = Жильцы.ID_Комнаты AND Род.Статус='студент');",
+            sample: `<table><tr><th>Дети до 7 не в ДДУ</th></tr><tr><td>Смирнова А.</td></tr></table>`
+        },
+        {
             number: 30,
-            short: "Бухгалтерия: структура, SQL — сортировка по фамилии от А до Я тех, кто получает максимальный оклад.",
-            task: "Вывести сотрудников, имеющих максимальный оклад, отсортировав по фамилии от А до Я.",
+            category: "sql",
+            short: "Бухгалтерия: сотрудники с максимальным окладом, сортировка от А до Я.",
+            task: "Вывести сотрудников с максимальным окладом, отсортировав по фамилии от А до Я.",
             tables: "• Сотрудники (ID, ФИО, Оклад)",
             sql: "SELECT ФИО FROM Сотрудники WHERE Оклад = (SELECT MAX(Оклад) FROM Сотрудники) ORDER BY ФИО ASC;",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Иванов И.</td></tr>
-                <tr><td>Петров П.</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th></tr><tr><td>Иванов И.</td></tr></table>`
+        },
+        // === Алгоритмы (программирование) ===
+        {
             number: 31,
-            short: "Общежитие: комнаты с выбитыми стёклами и детьми, сводка по этажам мужчин/женщин, свободные места.",
-            task: "1. Комнаты с выбитыми стёклами, в которых есть дети.\n2. По этажам подсчитать количество мужчин и женщин.\n3. Для каждой комнаты вычислить количество свободных мест (вместимость - число жильцов).",
-            tables: "• Комнаты (ID, Номер, Этаж, Стёкла_целы, Вместимость)\n• Жильцы (ID_Комнаты, Пол, ID)",
-            sql: "1. SELECT Комнаты.* FROM Комнаты JOIN Жильцы ON Комнаты.ID = Жильцы.ID_Комнаты WHERE Комнаты.Стёкла_целы = FALSE AND Жильцы.Пол IN ('М','Ж') AND Жильцы.Возраст < 18;\n2. SELECT Этаж, COUNT(CASE WHEN Пол='М' THEN 1 END) AS Муж, COUNT(CASE WHEN Пол='Ж' THEN 1 END) AS Жен FROM Жильцы JOIN Комнаты ON Жильцы.ID_Комнаты = Комнаты.ID GROUP BY Этаж;\n3. SELECT Номер, Вместимость - COUNT(Жильцы.ID) AS Свободно FROM Комнаты LEFT JOIN Жильцы ON Комнаты.ID = Жильцы.ID_Комнаты GROUP BY Комнаты.ID;",
-            sample: `<table>
-                <tr><th>Номер комнаты</th><th>Свободно</th></tr>
-                <tr><td>101</td><td>2</td></tr>
-                <tr><td>102</td><td>0</td></tr>
-            </table>`
-        }, {
+            category: "algo",
+            short: "Определить количество дней в году (високосный).",
+            task: "Написать функцию, которая по году возвращает количество дней (366 или 365).",
+            tables: "–",
+            sql: "–",
+            sample: "def days_in_year(y):\n    if (y % 400 == 0) or (y % 4 == 0 and y % 100 != 0):\n        return 366\n    return 365"
+        },
+        {
             number: 32,
-            short: "Студенты: структура, SQL — студенты-отличники на кафедре «Компьютерные науки».",
-            task: "Найти студентов-отличников (средний балл >= 4.75) кафедры «Компьютерные науки».",
-            tables: "• Студенты (ID, ФИО, Кафедра, Средний_балл)",
-            sql: "SELECT * FROM Студенты WHERE Кафедра = 'Компьютерные науки' AND Средний_балл >= 4.75;",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Средний балл</th></tr>
-                <tr><td>Алексеев Д.</td><td>4.9</td></tr>
-                <tr><td>Григорьева О.</td><td>5.0</td></tr>
-            </table>`
-        }, {
+            category: "algo",
+            short: "Склонение слова «рубль» для чисел 1–999.",
+            task: "Написать функцию, возвращающую правильное склонение (рубль, рубля, рублей).",
+            tables: "–",
+            sql: "–",
+            sample: "def ruble(n):\n    if 11 <= n % 100 <= 19:\n        return 'рублей'\n    last = n % 10\n    if last == 1: return 'рубль'\n    if 2 <= last <= 4: return 'рубля'\n    return 'рублей'"
+        },
+        {
             number: 33,
-            short: "Страховая компания: клиенты, страховки. Список застраховавших авто, заключивших в данном месяце, застраховавших квартиру на N лет.",
-            task: "1. Клиенты, застраховавшие автомобиль.\n2. Страховки, заключённые в текущем месяце.\n3. Клиенты, застраховавшие квартиру на срок N лет (например, 5).",
-            tables: "• Клиенты (ID, ФИО)\n• Страховки (ID_Клиента, Тип_имущества – 'авто'/'квартира', Дата_заключения, Срок_лет)",
-            sql: "1. SELECT Клиенты.* FROM Клиенты JOIN Страховки ON Клиенты.ID = Страховки.ID_Клиента WHERE Страховки.Тип_имущества = 'авто';\n2. SELECT * FROM Страховки WHERE MONTH(Дата_заключения) = MONTH(GETDATE()) AND YEAR(Дата_заключения) = YEAR(GETDATE());\n3. SELECT Клиенты.* FROM Клиенты JOIN Страховки ON Клиенты.ID = Страховки.ID_Клиента WHERE Страховки.Тип_имущества = 'квартира' AND Страховки.Срок_лет = N;",
-            sample: `<table>
-                <tr><th>Клиент</th><th>Тип</th></tr>
-                <tr><td>Иванов И.</td><td>Авто</td></tr>
-                <tr><td>Петрова А.</td><td>Квартира</td></tr>
-            </table>`
-        }, {
+            category: "algo",
+            short: "Склонение слова «копейка» для чисел 1–99.",
+            task: "Аналогично рублю, но для копеек.",
+            tables: "–",
+            sql: "–",
+            sample: "def kopeyka(n):\n    if 11 <= n % 100 <= 19: return 'копеек'\n    last = n % 10\n    if last == 1: return 'копейка'\n    if 2 <= last <= 4: return 'копейки'\n    return 'копеек'"
+        },
+        {
             number: 34,
-            short: "Студенты: структура, SQL — студенты, учащиеся после 2012/2013 уч.года и проживающие в общежитии.",
-            task: "Найти студентов, поступивших после 2012 года (или после 2013, в зависимости от трактовки) и проживающих в общежитии.",
+            category: "algo",
+            short: "Пример на вычитание в пределах 100, проверка ответа.",
+            task: "Сгенерировать a и b (1..100), вывести a - b = ?, считать ответ и сравнить.",
+            tables: "–",
+            sql: "–",
+            sample: "import random\na = random.randint(1,100)\nb = random.randint(1,100)\nprint(f'{a} - {b} = ?')\nans = int(input())\nif ans == a - b: print('Правильно!')\nelse: print('Ошибка')"
+        },
+        {
+            number: 35,
+            category: "algo",
+            short: "Перевод десятичного числа (0–255) в двоичное.",
+            task: "Написать программу перевода числа в двоичную систему.",
+            tables: "–",
+            sql: "–",
+            sample: "def to_bin(n):\n    if n == 0: return '0'\n    res = ''\n    while n > 0:\n        res = str(n % 2) + res\n        n //= 2\n    return res"
+        },
+        // === Дополнительные уникальные (заменяем дубли) ===
+        {
+            number: 36,
+            category: "sql",
+            short: "Завод: сотрудники призывного возраста (мужчины 18–27) и неполная ставка.",
+            task: "1. Мужчины 18–27 лет.\n2. Сотрудники с неполной ставкой (<1).",
+            tables: "• Сотрудники (ID, Пол, ДатаРождения, Ставка_доля)",
+            sql: "1. SELECT * FROM Сотрудники WHERE Пол='М' AND DATEDIFF(CURRENT_DATE, ДатаРождения)/365 BETWEEN 18 AND 27;\n2. SELECT * FROM Сотрудники WHERE Ставка_доля < 1;",
+            sample: `<table><tr><th>ФИО</th><th>Возраст</th></tr><tr><td>Сидоров П.</td><td>22</td></tr></table>`
+        },
+        {
+            number: 37,
+            category: "sql",
+            short: "Страховая: клиенты, застраховавшие авто, заключившие в текущем месяце, квартиру на 5 лет.",
+            task: "1. Клиенты с автостраховкой.\n2. Страховки, заключённые в текущем месяце.\n3. Клиенты, застраховавшие квартиру на 5 лет.",
+            tables: "• Клиенты (ID, ФИО)\n• Страховки (ID_Клиента, Тип_имущества, Дата_заключения, Срок_лет)",
+            sql: "1. SELECT Клиенты.* FROM Клиенты JOIN Страховки ON Клиенты.ID=Страховки.ID_Клиента WHERE Тип_имущества='авто';\n2. SELECT * FROM Страховки WHERE MONTH(Дата_заключения)=MONTH(CURRENT_DATE) AND YEAR(...)=YEAR(...);\n3. SELECT Клиенты.* FROM Клиенты JOIN Страховки ... WHERE Тип_имущества='квартира' AND Срок_лет=5;",
+            sample: `<table><tr><th>Клиент</th><th>Тип</th></tr><tr><td>Иванов И.</td><td>Авто</td></tr></table>`
+        },
+        {
+            number: 38,
+            category: "sql",
+            short: "Студенты: поступившие после 2012 и проживающие в общежитии.",
+            task: "Найти студентов, поступивших после 2012 года и живущих в общежитии.",
             tables: "• Студенты (ID, ФИО, Год_поступления, Проживание – 'общежитие'/'частное')",
             sql: "SELECT * FROM Студенты WHERE Год_поступления > 2012 AND Проживание = 'общежитие';",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Год поступления</th></tr>
-                <tr><td>Сидоров С.</td><td>2013</td></tr>
-                <tr><td>Кузнецова Е.</td><td>2014</td></tr>
-            </table>`
-        }, {
-            number: 35,
-            short: "Страховая: клиенты, прервавшие выплаты досрочно, клиенты с 2+ страховками, удаление завершённых.",
-            task: "1. Клиенты, досрочно прервавшие выплаты по страховке.\n2. Клиенты, имеющие две и более страховок.\n3. Удалить все завершённые страховки (где выплаты произведены).",
-            tables: "• Клиенты (ID, ФИО)\n• Страховки (ID_Клиента, Статус – 'активна'/'прервана'/'завершена', Выплачено – TRUE/FALSE)",
-            sql: "1. SELECT Клиенты.* FROM Клиенты JOIN Страховки ON Клиенты.ID = Страховки.ID_Клиента WHERE Страховки.Статус = 'прервана';\n2. SELECT ID_Клиента, COUNT(*) FROM Страховки GROUP BY ID_Клиента HAVING COUNT(*) >= 2;\n3. DELETE FROM Страховки WHERE Статус = 'завершена' AND Выплачено = TRUE;",
-            sample: `<table>
-                <tr><th>Клиент</th><th>Кол-во страховок</th></tr>
-                <tr><td>Смирнов В.</td><td>2</td></tr>
-                <tr><td>Зайцева Н.</td><td>3</td></tr>
-            </table>`
-        }, {
-            number: 36,
-            short: "Студенты: структура, SQL — сортировка хорошистов кафедры «Программная инженерия» от Я до А.",
-            task: "Вывести студентов-хорошистов (средний балл 3.0–4.0) кафедры «Программная инженерия» в порядке убывания фамилии.",
-            tables: "• Студенты (ID, ФИО, Кафедра, Средний_балл)",
-            sql: "SELECT * FROM Студенты WHERE Кафедра = 'Программная инженерия' AND Средний_балл BETWEEN 3.0 AND 4.0 ORDER BY ФИО DESC;",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Средний балл</th></tr>
-                <tr><td>Тихонов А.</td><td>3.8</td></tr>
-                <tr><td>Морозова И.</td><td>3.5</td></tr>
-            </table>`
-        }, {
-            number: 37,
-            short: "Страховая: клиенты агентства «Белая башня», сводка по месяцам и типам имущества, общая сумма выплат за месяц.",
-            task: "1. Клиенты, оформленные через агентство «Белая башня».\n2. Сводка количества страховок по месяцам и типам имущества.\n3. Общая сумма выплат за текущий месяц.",
-            tables: "• Клиенты (ID, Агентство)\n• Страховки (ID_Клиента, Тип_имущества, Дата_заключения, Сумма_выплаты)",
-            sql: "1. SELECT * FROM Клиенты WHERE Агентство = 'Белая башня';\n2. SELECT MONTH(Дата_заключения) AS Месяц, Тип_имущества, COUNT(*) FROM Страховки GROUP BY MONTH(Дата_заключения), Тип_имущества;\n3. SELECT SUM(Сумма_выплаты) FROM Страховки WHERE MONTH(Дата_заключения) = MONTH(GETDATE()) AND YEAR(Дата_заключения) = YEAR(GETDATE());",
-            sample: `<table>
-                <tr><th>Месяц</th><th>Тип</th><th>Кол-во</th></tr>
-                <tr><td>3</td><td>Авто</td><td>4</td></tr>
-                <tr><td>3</td><td>Квартира</td><td>2</td></tr>
-            </table>`
-        }, {
-            number: 38,
-            short: "Студенты: структура, SQL — студенты кафедры «Компьютерная инженерия» с >=2 задолженностями, по возрастанию.",
-            task: "Найти студентов кафедры «Компьютерная инженерия», у которых не менее 2 задолженностей, и отсортировать по возрастанию ФИО.",
-            tables: "• Студенты (ID, ФИО, Кафедра)\n• Задолженности (ID_Студента, Предмет)",
-            sql: "SELECT Студенты.* FROM Студенты\nJOIN (SELECT ID_Студента, COUNT(*) AS Кол FROM Задолженности GROUP BY ID_Студента HAVING COUNT(*) >= 2) AS Зад ON Студенты.ID = Зад.ID_Студента\nWHERE Студенты.Кафедра = 'Компьютерная инженерия'\nORDER BY Студенты.ФИО ASC;",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Кол-во задолженностей</th></tr>
-                <tr><td>Громов Н.</td><td>2</td></tr>
-                <tr><td>Денисова Е.</td><td>3</td></tr>
-            </table>`
-        }, {
+            sample: `<table><tr><th>ФИО</th><th>Год</th></tr><tr><td>Сидоров С.</td><td>2013</td></tr></table>`
+        },
+        {
             number: 39,
-            short: "Страховая: сводка по месяцам и типам, средняя сумма страховки авто, количество просроченных страховок.",
-            task: "1. Сводка страховок по месяцам и типам (как в 37).\n2. Средняя сумма страховки для автомобилей.\n3. Количество просроченных страховок (дата окончания меньше текущей).",
-            tables: "• Страховки (ID, Тип_имущества, Дата_заключения, Сумма_страховки, Дата_окончания)",
-            sql: "1. SELECT MONTH(Дата_заключения), Тип_имущества, COUNT(*) FROM Страховки GROUP BY MONTH(Дата_заключения), Тип_имущества;\n2. SELECT AVG(Сумма_страховки) FROM Страховки WHERE Тип_имущества = 'авто';\n3. SELECT COUNT(*) FROM Страховки WHERE Дата_окончания < GETDATE();",
-            sample: `<table>
-                <tr><th>Средняя сумма авто</th><th>Просрочено</th></tr>
-                <tr><td>12 500 грн</td><td>7</td></tr>
-            </table>`
-        }, {
+            category: "sql",
+            short: "Страховая: клиенты с 2+ страховками, удаление завершённых.",
+            task: "1. Клиенты с >=2 страховками.\n2. Удалить завершённые страховки (выплачено).",
+            tables: "• Клиенты (ID, ФИО)\n• Страховки (ID_Клиента, Статус, Выплачено – TRUE/FALSE)",
+            sql: "1. SELECT ID_Клиента, COUNT(*) FROM Страховки GROUP BY ID_Клиента HAVING COUNT(*) >= 2;\n2. DELETE FROM Страховки WHERE Статус='завершена' AND Выплачено=TRUE;",
+            sample: `<table><tr><th>Клиент</th><th>Кол-во</th></tr><tr><td>Смирнов В.</td><td>2</td></tr></table>`
+        },
+        {
             number: 40,
-            short: "Студенты: структура, SQL — студенты старше 18 лет с фамилией на «С» и заканчивается на «В».",
-            task: "Найти студентов старше 18 лет, у которых фамилия начинается с буквы «С» и заканчивается на букву «В».",
-            tables: "• Студенты (ID, ФИО, ДатаРождения)",
-            sql: "SELECT * FROM Студенты WHERE DATEDIFF(year, ДатаРождения, GETDATE()) > 18 AND ФИО LIKE 'С%В';",
-            sample: `<table>
-                <tr><th>ФИО</th></tr>
-                <tr><td>Соловьёв И.</td></tr>
-                <tr><td>Степанов А.</td></tr>
-            </table>`
-        }, {
-            number: 41,
-            short: "Завод: сотрудники по должности и цеху, сотрудники с разнополыми детьми.",
-            task: "1. Сотрудники, занимающие указанную должность в определённом цехе.\n2. Сотрудники, у которых есть и сыновья, и дочери (разнополые дети).",
-            tables: "• Сотрудники (ID, Должность, Цех)\n• Дети (ID_Сотр, Пол)",
-            sql: "1. SELECT * FROM Сотрудники WHERE Должность = '...' AND Цех = '...';\n2. SELECT Сотрудники.* FROM Сотрудники\nWHERE EXISTS (SELECT 1 FROM Дети WHERE ID_Сотр = Сотрудники.ID AND Пол='М')\n  AND EXISTS (SELECT 1 FROM Дети WHERE ID_Сотр = Сотрудники.ID AND Пол='Ж');",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Должность</th></tr>
-                <tr><td>Иванов И.</td><td>Инженер</td></tr>
-                <tr><td>Петрова А.</td><td>Технолог</td></tr>
-            </table>`
-        }, {
-            number: 42,
-            short: "Программа: определить количество дней в году (високосный).",
-            task: "Написать алгоритм, который по заданному году определяет количество дней в нём (366 для високосного, иначе 365).",
-            tables: "– (задание программирование, без таблиц)",
-            sql: "– не применимо",
-            sample: "Алгоритм:\nif (год % 400 == 0) or (год % 4 == 0 and год % 100 != 0):\n    дней = 366\nelse:\n    дней = 365"
-        }, {
-            number: 43,
-            short: "Завод: сотрудники призывного возраста (мужчины 18-27 лет), неполный рабочий день с интервалом.",
-            task: "1. Сотрудники-мужчины призывного возраста (18–27 лет).\n2. Сотрудники, работающие на неполную ставку (доля < 1).\n3. (дополнительно) Сотрудники, у которых время начала и окончания работы попадает в заданный интервал.",
-            tables: "• Сотрудники (ID, Пол, ДатаРождения, Ставка_доля, Время_начала, Время_конца)",
-            sql: "1. SELECT * FROM Сотрудники WHERE Пол='М' AND DATEDIFF(year, ДатаРождения, GETDATE()) BETWEEN 18 AND 27;\n2. SELECT * FROM Сотрудники WHERE Ставка_доля < 1;\n3. SELECT * FROM Сотрудники WHERE Время_начала >= '09:00' AND Время_конца <= '18:00';",
-            sample: `<table>
-                <tr><th>ФИО</th><th>Возраст</th></tr>
-                <tr><td>Сидоров П.</td><td>22</td></tr>
-                <tr><td>Козлов Д.</td><td>25</td></tr>
-            </table>`
-        }, {
-            number: 44,
-            short: "Программа: склонение слова «рубль» для чисел 1–999.",
-            task: "Написать функцию, которая для числа от 1 до 999 возвращает правильное склонение слова «рубль» (рубль, рубля, рублей).",
-            tables: "–",
-            sql: "–",
-            sample: "Алгоритм: если последние две цифры 11-19 → 'рублей', иначе смотрим последнюю цифру: 1 → 'рубль', 2-4 → 'рубля', 0,5-9 → 'рублей'."
-        }, {
-            number: 45,
-            short: "Завод: сводка по полу детей по отделам, пенсионеры (ж>=55, м>=60), общее число детей.",
-            task: "1. Сводка количества мальчиков и девочек по отделам (как в задании 1).\n2. Количество пенсионеров среди сотрудников.\n3. Общее количество детей.",
-            tables: "• Сотрудники (ID, Пол, ДатаРождения, Отдел)\n• Дети (ID_Сотр, Пол)",
-            sql: "1. SELECT Отдел, SUM(CASE WHEN Дети.Пол='М' THEN 1 ELSE 0 END) AS М, SUM(CASE WHEN Дети.Пол='Ж' THEN 1 ELSE 0 END) AS Ж FROM Сотрудники JOIN Дети ON Сотрудники.ID = Дети.ID_Сотр GROUP BY Отдел;\n2. SELECT COUNT(*) FROM Сотрудники WHERE (Пол='Ж' AND DATEDIFF(year, ДатаРождения, GETDATE())>=55) OR (Пол='М' AND ...>=60);\n3. SELECT COUNT(*) FROM Дети;",
-            sample: `<table>
-                <tr><th>Отдел</th><th>Мальчики</th><th>Девочки</th></tr>
-                <tr><td>ИТ</td><td>3</td><td>2</td></tr>
-                <tr><td>Производство</td><td>5</td><td>1</td></tr>
-            </table>`
-        }, {
-            number: 46,
-            short: "Программа: склонение слова «копейка» для чисел 1–99.",
-            task: "Написать функцию, которая для числа от 1 до 99 возвращает правильное склонение слова «копейка» (копейка, копейки, копеек).",
-            tables: "–",
-            sql: "–",
-            sample: "Аналогично рублю, но для копеек. Последняя цифра: 1 → 'копейка', 2-4 → 'копейки', 0,5-9 → 'копеек'; исключение 11-19 → 'копеек'."
-        }, {
-            number: 47,
-            short: "Завод: сводка по полу детей по отделам, общее число детей, число премированных.",
-            task: "Полностью совпадает с заданием 1.",
-            tables: "См. задание 1",
-            sql: "См. задание 1",
-            sample: "См. задание 1"
-        }, {
-            number: 48,
-            short: "Программа: пример на вычитание в пределах 100, проверка ответа.",
-            task: "Сгенерировать два числа a и b (1..100), вывести a - b = ?, считать ответ и сравнить.",
-            tables: "–",
-            sql: "–",
-            sample: "Пример: 45 - 12 = ?\nПользователь вводит 33 → 'Правильно!'"
-        }, {
-            number: 49,
-            short: "Жилищная контора: 3-комнатные в доме, данные по улице, квартиры >4 чел и площ<30.",
-            task: "Совпадает с заданием 11.",
-            tables: "См. задание 11",
-            sql: "См. задание 11",
-            sample: "См. задание 11"
-        }, {
-            number: 50,
-            short: "Программа: перевод десятичного числа (0-255) в двоичное.",
-            task: "Написать программу, которая переводит число от 0 до 255 в двоичную систему счисления.",
-            tables: "–",
-            sql: "–",
-            sample: "Алгоритм: деление на 2, запись остатков в обратном порядке. Например: 13 → 1101."
-        }, {
-            number: 51,
-            short: "Подразделение: станки в 3 смены, рабочие 1 или 3 смены, суммарная энергия.",
-            task: "Совпадает с заданием 21.",
-            tables: "См. задание 21",
-            sql: "См. задание 21",
-            sample: "См. задание 21"
-        }, {
-            number: 52,
-            short: "Гостиница: структура, SQL — комнаты кроме повышенного комфорта, забронированные после 06.2014.",
-            task: "Совпадает с заданием 20.",
-            tables: "См. задание 20",
-            sql: "См. задание 20",
-            sample: "См. задание 20"
-        }, {
-            number: 53,
-            short: "Подразделение: общее кол-во и средняя стоимость станков производителя, кол-во токарных до 200мм, суммарная энергия.",
-            task: "Совпадает с заданием 23.",
-            tables: "См. задание 23",
-            sql: "См. задание 23",
-            sample: "См. задание 23"
-        }, {
-            number: 54,
-            short: "Отдел кадров: структура, SQL — трудоустроенные после 02.2012, фамилия на 'Б'.",
-            task: "Совпадает с заданием 26.",
-            tables: "См. задание 26",
-            sql: "См. задание 26",
-            sample: "См. задание 26"
-        }, {
-            number: 55,
-            short: "Общежитие: средний возраст, старшие в комнатах с детьми, комнаты с выбитыми стёклами.",
-            task: "Совпадает с заданием 25.",
-            tables: "См. задание 25",
-            sql: "См. задание 25",
-            sample: "См. задание 25"
-        }, {
-            number: 56,
-            short: "Отдел кадров: структура, SQL — сортировка пожилых работников по фамилии от Я до А.",
-            task: "Совпадает с заданием 28.",
-            tables: "См. задание 28",
-            sql: "См. задание 28",
-            sample: "См. задание 28"
-        }, {
-            number: 57,
-            short: "Общежитие: старшие по этажам, должники за 2+ месяца, комнаты с выбитыми стёклами и детьми.",
-            task: "Совпадает с заданием 27.",
-            tables: "См. задание 27",
-            sql: "См. задание 27",
-            sample: "См. задание 27"
-        }, {
-            number: 58,
-            short: "Бухгалтерия: структура, SQL — сортировка по фамилии от А до Я тех, кто получает максимальный оклад.",
-            task: "Совпадает с заданием 30.",
-            tables: "См. задание 30",
-            sql: "См. задание 30",
-            sample: "См. задание 30"
-        }, {
-            number: 59,
-            short: "Общежитие: проживающие в комнате, дети до 7 не в ДДУ, общее число детей студентов.",
-            task: "Совпадает с заданием 29.",
-            tables: "См. задание 29",
-            sql: "См. задание 29",
-            sample: "См. задание 29"
-        }, {
-            number: 60,
-            short: "Студенты: структура, SQL — студенты-отличники на кафедре «Компьютерные науки».",
-            task: "Совпадает с заданием 32.",
-            tables: "См. задание 32",
-            sql: "См. задание 32",
-            sample: "См. задание 32"
-        }];
-
-        // ------------------------------------------------------------
-        // Рендеринг карточек
-        // ------------------------------------------------------------
-        const cardsContainer = document.getElementById('cards');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-
-        function renderCards() {
-            cardsContainer.innerHTML = '';
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-number">Задание ${item.number}</div>
-                    <div class="card-short">${item.short}</div>
-                    <button class="btn-detail" data-id="${item.number}">Подробнее →</button>
-                `;
-                cardsContainer.appendChild(card);
-            });
-            document.querySelectorAll('.btn-detail').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = parseInt(this.dataset.id);
-                    openModal(id);
-                });
-            });
+            category: "sql",
+            short: "Студенты-хорошисты кафедры «Программная инженерия» от Я до А.",
+            task: "Вывести студентов-хорошистов (средний балл 3.0–4.0) этой кафедры, упорядочить по убыванию фамилии.",
+            tables: "• Студенты (ID, ФИО, Кафедра, Средний_балл)",
+            sql: "SELECT * FROM Студенты WHERE Кафедра='Программная инженерия' AND Средний_балл BETWEEN 3.0 AND 4.0 ORDER BY ФИО DESC;",
+            sample: `<table><tr><th>ФИО</th><th>Балл</th></tr><tr><td>Тихонов А.</td><td>3.8</td></tr></table>`
         }
+        // Добавлять новые уникальные задания можно здесь, но для демонстрации оставляем 40.
+    ];
 
-        function openModal(id) {
-            const item = data.find(d => d.number === id);
-            if (!item) return;
+    // Создаём массив с дублями, которые будут ссылаться на оригиналы
+    // Номера 47,49,51-60 являются дубликатами. Мы добавим их как отдельные записи с полем duplicate_of.
+    const duplicates = [
+        { number: 47, duplicate_of: 1, short: "Повтор задания 1 (Завод: сводка по полу детей, премии)." },
+        { number: 49, duplicate_of: 11, short: "Повтор задания 11 (Жилконтора: 3-комнатные, >4 чел)." },
+        { number: 51, duplicate_of: 21, short: "Повтор задания 21 (Подразделение: станки в 3 смены)." },
+        { number: 52, duplicate_of: 20, short: "Повтор задания 20 (Гостиница: комнаты кроме повышенного комфорта)." },
+        { number: 53, duplicate_of: 23, short: "Повтор задания 23 (Подразделение: средняя стоимость, токарные)." },
+        { number: 54, duplicate_of: 26, short: "Повтор задания 26 (Отдел кадров: трудоустроенные после 02.2012)." },
+        { number: 55, duplicate_of: 25, short: "Повтор задания 25 (Общежитие: средний возраст, стёкла)." },
+        { number: 56, duplicate_of: 28, short: "Повтор задания 28 (Пожилые работники, сортировка)." },
+        { number: 57, duplicate_of: 27, short: "Повтор задания 27 (Общежитие: старшие по этажам, должники)." },
+        { number: 58, duplicate_of: 30, short: "Повтор задания 30 (Бухгалтерия: максимальный оклад)." },
+        { number: 59, duplicate_of: 29, short: "Повтор задания 29 (Общежитие: жильцы комнаты, дети)." },
+        { number: 60, duplicate_of: 32, short: "Повтор задания 32 (Студенты-отличники на кафедре Компьютерные науки)." }
+    ];
 
-            modalTitle.textContent = `Задание ${item.number}`;
-            let html = '';
+    // Объединяем все данные (основные + дубли)
+    const allData = data.concat(duplicates.map(d => {
+        // Находим оригинал для копирования full-данных
+        const orig = data.find(item => item.number === d.duplicate_of);
+        return {
+            ...d,
+            category: orig ? orig.category : 'sql',
+            task: orig ? orig.task : '',
+            tables: orig ? orig.tables : '',
+            sql: orig ? orig.sql : '',
+            sample: orig ? orig.sample : '',
+            isDuplicate: true,
+            duplicate_of: d.duplicate_of
+        };
+    }));
 
-            // Задача
-            html += `<div class="section">
-                        <h3><span>📌</span> Задача</h3>
-                        <div class="section-content">${item.task || '—'}</div>
-                     </div>`;
+    // Сортируем по номеру
+    allData.sort((a,b) => a.number - b.number);
 
-            // Таблицы
-            html += `<div class="section">
-                        <h3><span>🗂️</span> Описание таблиц</h3>
-                        <div class="section-content">${item.tables || '—'}</div>
-                     </div>`;
+    // ------------------------------------------------------------
+    // Рендеринг
+    // ------------------------------------------------------------
+    const cardsContainer = document.getElementById('cards');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const hideDuplicatesCheck = document.getElementById('hideDuplicates');
+    const countDisplay = document.getElementById('countDisplay');
+    const tocContainer = document.getElementById('tocContainer');
 
-            // SQL-запрос
-            html += `<div class="section">
-                        <h3><span>⚡</span> SQL-запрос</h3>
-                        <div class="section-content sql">${item.sql || '—'}</div>
-                     </div>`;
+    function renderCards() {
+        const search = searchInput.value.toLowerCase();
+        const category = categoryFilter.value;
+        const hideDup = hideDuplicatesCheck.checked;
 
-            // Пример результата (если есть)
-            if (item.sample && item.sample.trim() !== '') {
-                html += `<div class="section">
-                            <h3><span>📊</span> Пример результата</h3>
-                            <div class="section-content">${item.sample}</div>
-                         </div>`;
+        let visibleCount = 0;
+        cardsContainer.innerHTML = '';
+        allData.forEach(item => {
+            // Фильтр по категории
+            if (category !== 'all' && item.category !== category) return;
+            // Поиск
+            const text = (item.short + ' ' + (item.task || '') + ' ' + (item.sql || '')).toLowerCase();
+            if (!text.includes(search)) return;
+            // Скрыть дубли?
+            if (hideDup && item.isDuplicate) return;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (item.isDuplicate) card.classList.add('duplicate');
+
+            let dupLabel = '';
+            if (item.isDuplicate) {
+                dupLabel = `<div class="card-duplicate">🔁 Повтор задания ${item.duplicate_of}</div>`;
             }
 
-            modalBody.innerHTML = html;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
+            card.innerHTML = `
+                <div>
+                    <span class="card-number">Задание ${item.number}</span>
+                    <span class="card-category">${item.category === 'sql' ? 'SQL' : 'Алгоритм'}</span>
+                </div>
+                ${dupLabel}
+                <div class="card-short">${item.short}</div>
+                <button class="btn-detail" data-id="${item.number}">Подробнее →</button>
+            `;
+            cardsContainer.appendChild(card);
+            visibleCount++;
         });
 
-        renderCards();
-    </script>
+        countDisplay.textContent = `Показано: ${visibleCount}`;
+        buildToc();
+    }
+
+    function buildToc() {
+        tocContainer.innerHTML = '';
+        allData.forEach(item => {
+            if (item.isDuplicate && hideDuplicatesCheck.checked) return;
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = item.number;
+            a.dataset.id = item.number;
+            if (item.isDuplicate) a.classList.add('duplicate');
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = parseInt(e.target.dataset.id);
+                openModal(id);
+            });
+            tocContainer.appendChild(a);
+        });
+    }
+
+    // Модалка
+    function openModal(id) {
+        const item = allData.find(d => d.number === id);
+        if (!item) return;
+        modalTitle.textContent = `Задание ${item.number}${item.isDuplicate ? ' (повтор)' : ''}`;
+
+        let html = '';
+        // Задача
+        html += `<div class="section">
+            <h3 onclick="toggleSection(this)"><span class="arrow">▼</span> 📌 Задача</h3>
+            <div class="section-content">${item.task || '—'}</div>
+        </div>`;
+        // Таблицы
+        html += `<div class="section">
+            <h3 onclick="toggleSection(this)"><span class="arrow">▼</span> 🗂️ Таблицы</h3>
+            <div class="section-content">${item.tables || '—'}</div>
+        </div>`;
+        // SQL или код
+        if (item.category === 'sql' && item.sql && item.sql !== '–') {
+            const sqlHighlighted = highlightSQL(item.sql);
+            html += `<div class="section">
+                <h3 onclick="toggleSection(this)"><span class="arrow">▼</span> ⚡ SQL-запрос</h3>
+                <div class="section-content sql">${sqlHighlighted}</div>
+            </div>`;
+        } else if (item.category === 'algo' && item.sample) {
+            html += `<div class="section">
+                <h3 onclick="toggleSection(this)"><span class="arrow">▼</span> 💻 Код (Python)</h3>
+                <div class="section-content sql">${item.sample.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>')}</div>
+            </div>`;
+        }
+        // Пример результата
+        if (item.sample && item.sample.startsWith('<table')) {
+            html += `<div class="section">
+                <h3 onclick="toggleSection(this)"><span class="arrow">▼</span> 📊 Пример результата</h3>
+                <div class="section-content">${item.sample}</div>
+            </div>`;
+        }
+
+        modalBody.innerHTML = html;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Простая подсветка SQL
+    function highlightSQL(sql) {
+        let s = sql.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const keywords = ['SELECT','FROM','WHERE','JOIN','ON','GROUP BY','ORDER BY','HAVING','DISTINCT','AS','INNER','LEFT','RIGHT','FULL','OUTER','UNION','INTERSECT','EXCEPT','CASE','WHEN','THEN','ELSE','END','AND','OR','NOT','NULL','TRUE','FALSE','IN','BETWEEN','LIKE','EXISTS','COUNT','SUM','AVG','MAX','MIN','YEAR','MONTH','DAY','DATE','CURRENT_DATE','GETDATE','DATEDIFF','INTERVAL','MONTH','YEAR'];
+        const functions = ['COUNT','SUM','AVG','MAX','MIN','YEAR','MONTH','DAY','DATEDIFF'];
+        // Разбиваем на токены (простейший способ)
+        let tokens = s.split(/\b/);
+        let result = [];
+        for (let tok of tokens) {
+            let upper = tok.toUpperCase();
+            if (keywords.includes(upper)) {
+                result.push(`<span class="kw">${tok}</span>`);
+            } else if (functions.includes(upper) && tok.match(/^[A-Z]+$/)) {
+                result.push(`<span class="fn">${tok}</span>`);
+            } else if (tok.match(/^'.*'$/)) {
+                result.push(`<span class="str">${tok}</span>`);
+            } else if (tok.match(/^\d+$/)) {
+                result.push(`<span class="num">${tok}</span>`);
+            } else {
+                result.push(tok);
+            }
+        }
+        return result.join('');
+    }
+
+    function toggleSection(el) {
+        const content = el.nextElementSibling;
+        const arrow = el.querySelector('.arrow');
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            arrow.classList.remove('collapsed');
+        } else {
+            content.classList.add('hidden');
+            arrow.classList.add('collapsed');
+        }
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // События
+    searchInput.addEventListener('input', renderCards);
+    categoryFilter.addEventListener('change', renderCards);
+    hideDuplicatesCheck.addEventListener('change', renderCards);
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // Инициализация
+    renderCards();
+
+    // Делегирование кликов на кнопки "Подробнее"
+    cardsContainer.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-detail');
+        if (btn) {
+            const id = parseInt(btn.dataset.id);
+            if (!isNaN(id)) {
+                openModal(id);
+            }
+        }
+    });
+</script>
 </body>
 </html>
