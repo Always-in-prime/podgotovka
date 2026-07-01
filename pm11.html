@@ -764,6 +764,17 @@
         buildToc();
     }
 
+        // Делегирование кликов на кнопки "Подробнее"
+    cardsContainer.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-detail');
+        if (btn) {
+            const id = parseInt(btn.dataset.id);
+            if (!isNaN(id)) {
+                openModal(id);
+            }
+        }
+    });
+
     function buildToc() {
         tocContainer.innerHTML = '';
         allData.forEach(item => {
@@ -877,17 +888,6 @@
 
     // Инициализация
     renderCards();
-
-    // Делегирование кликов на кнопки "Подробнее"
-    cardsContainer.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-detail');
-        if (btn) {
-            const id = parseInt(btn.dataset.id);
-            if (!isNaN(id)) {
-                openModal(id);
-            }
-        }
-    });
 </script>
 </body>
 </html>
