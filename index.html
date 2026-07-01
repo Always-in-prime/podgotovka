@@ -1,4 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Хаб заданий</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<a href="pm04.html">PM.04</a>
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, #f6f9fc 0%, #e9f1f8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-<a href="pm11.html">PM.11</a>
+        .hub {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 40px 40px 50px;
+            box-shadow: 0 30px 60px rgba(0, 20, 40, 0.15),
+                        0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .hub-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hub-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e3a5f, #2b5b8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .hub-header p {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-top: 6px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 32px 24px 30px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 20, 40, 0.12);
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            line-height: 1;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0b2b44;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: #3d5a73;
+            line-height: 1.5;
+            opacity: 0.85;
+            max-width: 200px;
+        }
+
+        .card-badge {
+            margin-top: 18px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 4px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            transition: background 0.2s;
+        }
+
+        .card:hover .card-badge {
+            background: rgba(59, 130, 246, 0.18);
+        }
+
+        /* Специфичные иконки для каждой карточки */
+        .card.pm04 .card-icon { content: "📘"; }
+        .card.pm11 .card-icon { content: "📊"; }
+
+        /* Адаптив */
+        @media (max-width: 550px) {
+            .hub {
+                padding: 28px 20px 32px;
+                border-radius: 32px;
+            }
+            .hub-header h1 {
+                font-size: 2.2rem;
+            }
+            .cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .card {
+                padding: 28px 20px 26px;
+            }
+        }
+
+        /* Дополнительный стиль для красоты */
+        .footer-note {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #4a5f73;
+            opacity: 0.5;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="hub">
+        <div class="hub-header">
+            <h1>📁 Хаб заданий</h1>
+            <p>Выберите раздел для перехода</p>
+        </div>
+
+        <div class="cards">
+            <a href="pm04.html" class="card pm04">
+                <span class="card-icon">📘</span>
+                <div class="card-title">PM.04</div>
+                <div class="card-desc">Базы данных и программирование</div>
+                <span class="card-badge">Перейти →</span>
+            </a>
+
+            <a href="pm11.html" class="card pm11">
+                <span class="card-icon">📊</span>
+                <div class="card-title">PM.11</div>
+                <div class="card-desc">Программное обеспечение</div>
+                <span class="card-badge">Перейти →</span>
+            </a>
+        </div>
+
+        <div class="footer-note">
+            © 2026 · Учебные материалы
+        </div>
+    </main>
+
+</body>
+</html>
